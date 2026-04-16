@@ -11,7 +11,11 @@ export const updateProfileApi = async (payload) => {
 };
 
 export const listUsersApi = async (params) => {
-  const { data } = await http.get('/users', { params });
+  const normalizedParams = Object.fromEntries(
+    Object.entries(params || {}).filter(([, value]) => value !== '' && value !== undefined)
+  );
+
+  const { data } = await http.get('/users', { params: normalizedParams });
   return data;
 };
 

@@ -113,6 +113,7 @@ export default function UsersPage() {
     <div className="stack">
       <form className="card filters" onSubmit={onFilter}>
         <h3>User Filters</h3>
+        <p className="muted">Filter users by name, role, or account status.</p>
         <input
           placeholder="Search by name/email/username"
           value={search}
@@ -195,6 +196,7 @@ export default function UsersPage() {
 
       <div className="card">
         <h3>Users</h3>
+        <p className="muted">Manage user records and account permissions.</p>
         <div className="table-wrap">
           <table>
             <thead>

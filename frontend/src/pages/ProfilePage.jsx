@@ -31,6 +31,7 @@ export default function ProfilePage() {
   return (
     <form className="card form" onSubmit={onSubmit}>
       <h3>My Profile</h3>
+      <p className="muted">Update your personal information and password.</p>
 
       <label htmlFor="name">Name</label>
       <input id="name" value={name} onChange={(e) => setName(e.target.value)} />
