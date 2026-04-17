@@ -1,15 +1,17 @@
 const dotenv = require('dotenv');
+const path = require('path');
 
-dotenv.config();
+// Load backend/.env when present (local dev). On Vercel, env vars come from project settings.
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT) || 5000,
-  mongoUri: process.env.MONGO_URI || process.env.MONGO_URI,
+  mongoUri: process.env.MONGO_URI || process.env.MONGODB_URI,
   corsOrigin: (process.env.CORS_ORIGIN || 'user-management-system-btoajng9w.vercel.app')
     .split(',')
     .map((origin) => origin.trim()),
-  jwtAccessSecret: process.env.JWT_ACCESS_SECRET,
+  jwtAccessSecret: process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET,
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
@@ -33,7 +35,7 @@ const validateEnv = () => {
   }
 
   if (!env.jwtAccessSecret) {
-    missing.push('JWT_ACCESS_SECRET');
+    missing.push('JWT_ACCESS_SECRET or JWT_SECRET');
   }
 
   if (missing.length > 0) {
