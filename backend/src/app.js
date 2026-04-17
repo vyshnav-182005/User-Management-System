@@ -9,9 +9,48 @@ const errorHandler = require('./middleware/error.middleware');
 
 const app = express();
 
+const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const matchesAllowedOrigin = (requestOrigin, allowedOrigin) => {
+  if (allowedOrigin === '*') {
+    return true;
+  }
+
+  if (requestOrigin === allowedOrigin) {
+    return true;
+  }
+
+  if (!allowedOrigin.includes('*')) {
+    return false;
+  }
+
+  const pattern = `^${escapeRegex(allowedOrigin).replace(/\\\*/g, '.*')}$`;
+  return new RegExp(pattern, 'i').test(requestOrigin);
+};
+
+const corsOriginValidator = (requestOrigin, callback) => {
+  // Allow same-origin/non-browser calls (no Origin header).
+  if (!requestOrigin) {
+    callback(null, true);
+    return;
+  }
+
+  const normalizedRequestOrigin = requestOrigin.replace(/\/$/, '');
+  const isAllowed = env.corsOrigin.some((allowedOrigin) =>
+    matchesAllowedOrigin(normalizedRequestOrigin, allowedOrigin)
+  );
+
+  if (isAllowed) {
+    callback(null, true);
+    return;
+  }
+
+  callback(new Error(`CORS blocked for origin: ${normalizedRequestOrigin}`));
+};
+
 app.use(
   cors({
-    origin: env.corsOrigin,
+    origin: corsOriginValidator,
     credentials: true,
   })
 );

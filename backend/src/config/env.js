@@ -10,15 +10,27 @@ const normalizeOrigin = (origin) => {
     return trimmed;
   }
 
-  if (/^https?:\/\//i.test(trimmed)) {
+  if (trimmed === '*') {
     return trimmed;
   }
 
-  if (trimmed.includes('localhost') || trimmed.includes('127.0.0.1')) {
-    return `http://${trimmed}`;
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed.replace(/\/$/, '');
   }
 
-  return `https://${trimmed}`;
+  if (trimmed.includes('*')) {
+    if (trimmed.startsWith('localhost') || trimmed.startsWith('127.0.0.1')) {
+      return `http://${trimmed}`;
+    }
+
+    return `https://${trimmed}`;
+  }
+
+  if (trimmed.includes('localhost') || trimmed.includes('127.0.0.1')) {
+    return `http://${trimmed.replace(/\/$/, '')}`;
+  }
+
+  return `https://${trimmed.replace(/\/$/, '')}`;
 };
 
 const env = {
