@@ -2,10 +2,22 @@ const asyncHandler = require('../utils/asyncHandler');
 const env = require('../config/env');
 const authService = require('../services/auth.service');
 
+const buildCookieBaseOptions = () => {
+  const options = {
+    httpOnly: true,
+    secure: env.cookieSecure,
+    sameSite: env.cookieSameSite,
+  };
+
+  if (env.cookieDomain) {
+    options.domain = env.cookieDomain;
+  }
+
+  return options;
+};
+
 const buildCookieOptions = () => ({
-  httpOnly: true,
-  secure: env.nodeEnv === 'production',
-  sameSite: 'strict',
+  ...buildCookieBaseOptions(),
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
 
@@ -41,7 +53,7 @@ const refresh = asyncHandler(async (req, res) => {
 
 const logout = asyncHandler(async (req, res) => {
   await authService.logout(req.user._id);
-  res.clearCookie('refreshToken');
+  res.clearCookie('refreshToken', buildCookieBaseOptions());
 
   return res.status(200).json({ message: 'Logged out successfully' });
 });

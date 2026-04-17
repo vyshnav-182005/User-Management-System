@@ -150,3 +150,66 @@ Base path: `/api/v1`
 - Refresh token is optional: if `JWT_REFRESH_SECRET` is omitted, only access tokens are issued.
 - Admin bootstrap user is optional and controlled by `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`.
 - In production, replace local JWT secrets and admin password with strong secure values.
+
+## Deployment Guide
+
+Use this split deployment approach:
+
+- Frontend: Vercel
+- Backend API: Render (or Railway/Fly)
+- Database: MongoDB Atlas
+
+### 1) Deploy Backend (Render)
+
+1. Push this repository to GitHub.
+2. In Render, create a new **Web Service** from the backend folder.
+3. Configure:
+  - Root Directory: `backend`
+  - Build Command: `npm install`
+  - Start Command: `npm start`
+4. Add backend environment variables:
+  - `NODE_ENV=production`
+  - `PORT=5000`
+  - `MONGO_URI=<your atlas connection string>`
+  - `CORS_ORIGIN=<your vercel frontend url>`
+  - `JWT_ACCESS_SECRET=<strong secret>`
+  - `JWT_ACCESS_EXPIRES_IN=15m`
+  - `JWT_REFRESH_SECRET=<strong refresh secret>`
+  - `JWT_REFRESH_EXPIRES_IN=7d`
+  - `BCRYPT_SALT_ROUNDS=12`
+  - `COOKIE_SAME_SITE=none`
+  - `COOKIE_SECURE=true`
+  - Optional: `COOKIE_DOMAIN=`
+  - Optional bootstrap admin: `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`
+5. Deploy and copy the backend URL, for example: `https://your-api.onrender.com/api/v1`
+
+### 2) Update Atlas Network Access
+
+1. In MongoDB Atlas, open **Network Access**.
+2. Add Render outbound IP(s), or allow `0.0.0.0/0` temporarily for testing.
+3. Ensure your database user credentials in `MONGO_URI` are correct.
+
+### 3) Deploy Frontend (Vercel)
+
+1. In Vercel, import the same repository.
+2. Configure:
+  - Root Directory: `frontend`
+  - Build Command: `npm run build`
+  - Output Directory: `dist`
+3. Add frontend environment variable:
+  - `VITE_API_URL=<your backend api url>/api/v1`
+4. Deploy and copy the frontend URL.
+
+### 4) Final CORS Check
+
+Set backend `CORS_ORIGIN` to include your frontend domain.
+
+- Single origin example: `https://your-app.vercel.app`
+- Multiple origins example: `https://your-app.vercel.app,http://localhost:5173`
+
+### 5) Smoke Test
+
+1. Open frontend URL and login.
+2. Verify Dashboard/Profile loads.
+3. Verify Users page works for admin/manager role.
+4. Verify refresh flow by waiting for access token expiry and retrying an API call.

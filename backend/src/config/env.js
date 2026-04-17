@@ -22,6 +22,12 @@ module.exports = {
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS) || 12,
+  cookieSecure:
+    typeof process.env.COOKIE_SECURE === 'undefined'
+      ? process.env.NODE_ENV === 'production'
+      : process.env.COOKIE_SECURE === 'true',
+  cookieSameSite: process.env.COOKIE_SAME_SITE || 'lax',
+  cookieDomain: process.env.COOKIE_DOMAIN,
   adminEmail: process.env.ADMIN_EMAIL,
   adminUsername: process.env.ADMIN_USERNAME,
   adminPassword: process.env.ADMIN_PASSWORD,
