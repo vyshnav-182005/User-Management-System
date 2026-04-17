@@ -22,7 +22,8 @@ export default function LoginPage() {
     try {
       await login(form.loginId, form.password);
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      const apiMessage = err.response?.data?.message;
+      setError(apiMessage || 'Login failed: unable to reach backend or blocked by CORS');
     } finally {
       setSubmitting(false);
     }
