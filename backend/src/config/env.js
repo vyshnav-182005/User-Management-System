@@ -2,7 +2,9 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-const required = ['MONGO_URI', 'JWT_ACCESS_SECRET'];
+const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+
+const required = ['JWT_ACCESS_SECRET'];
 
 required.forEach((key) => {
   if (!process.env[key]) {
@@ -10,10 +12,14 @@ required.forEach((key) => {
   }
 });
 
+if (!mongoUri) {
+  throw new Error('Missing required environment variable: MONGO_URI or MONGODB_URI');
+}
+
 module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: Number(process.env.PORT) || 5000,
-  mongoUri: process.env.MONGO_URI,
+  mongoUri,
   corsOrigin: (process.env.CORS_ORIGIN || 'http://localhost:5173')
     .split(',')
     .map((origin) => origin.trim()),
