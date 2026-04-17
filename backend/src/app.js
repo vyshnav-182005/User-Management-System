@@ -25,6 +25,21 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'User Management API is running',
+    health: '/health',
+    apiBase: '/api/v1',
+  });
+});
+
+app.get('/api', (req, res) => {
+  res.status(200).json({
+    message: 'Use /api/v1 for API routes',
+    apiBase: '/api/v1',
+  });
+});
+
 app.use('/api/v1', routes);
 
 app.use((req, res) => {
