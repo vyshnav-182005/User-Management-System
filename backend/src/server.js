@@ -1,10 +1,12 @@
 const env = require('./config/env');
+const { validateEnv } = require('./config/env');
 const connectDB = require('./config/db');
 const app = require('./app');
 const { ensureAdminUser } = require('./services/bootstrap.service');
 
 const startServer = async () => {
   try {
+    validateEnv();
     await connectDB();
     await ensureAdminUser();
 

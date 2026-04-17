@@ -1,6 +1,7 @@
 const app = require('../src/app');
 const connectDB = require('../src/config/db');
 const { ensureAdminUser } = require('../src/services/bootstrap.service');
+const { validateEnv } = require('../src/config/env');
 
 let bootstrapPromise = null;
 
@@ -10,6 +11,8 @@ module.exports = async (req, res) => {
   }
 
   try {
+    validateEnv();
+
     if (!bootstrapPromise) {
       bootstrapPromise = (async () => {
         await connectDB();
@@ -27,6 +30,7 @@ module.exports = async (req, res) => {
     console.error('Serverless bootstrap failed', error);
     return res.status(500).json({
       message: 'Server bootstrap failed',
+      details: error.message,
     });
   }
 };
