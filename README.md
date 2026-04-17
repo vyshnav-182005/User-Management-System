@@ -153,26 +153,27 @@ Base path: `/api/v1`
 
 ## Deployment Guide
 
-Use this split deployment approach:
+Use this deployment approach:
 
 - Frontend: Vercel
-- Backend API: Render (or Railway/Fly)
+- Backend API (serverless): Vercel
 - Database: MongoDB Atlas
 
-### 1) Deploy Backend (Render)
+### 1) Deploy Backend (Vercel)
 
 1. Push this repository to GitHub.
-2. In Render, create a new **Web Service** from the backend folder.
-3. Configure:
+2. In Vercel, create/import a project for the backend.
+3. Configure backend project settings:
   - Root Directory: `backend`
-  - Build Command: `npm install`
-  - Start Command: `npm start`
-4. Add backend environment variables:
+  - Framework Preset: `Other`
+  - `vercel.json` is already configured to route traffic to `api/index.js`.
+4. Add backend environment variables in **Settings -> Environment Variables**:
   - `NODE_ENV=production`
-  - `PORT=5000`
   - `MONGO_URI=<your atlas connection string>`
-  - `CORS_ORIGIN=<your vercel frontend url>`
+    - Supported fallback: `MONGODB_URI`
+  - `CORS_ORIGIN=<your frontend vercel url with https://>`
   - `JWT_ACCESS_SECRET=<strong secret>`
+    - Supported fallback: `JWT_SECRET`
   - `JWT_ACCESS_EXPIRES_IN=15m`
   - `JWT_REFRESH_SECRET=<strong refresh secret>`
   - `JWT_REFRESH_EXPIRES_IN=7d`
@@ -181,35 +182,57 @@ Use this split deployment approach:
   - `COOKIE_SECURE=true`
   - Optional: `COOKIE_DOMAIN=`
   - Optional bootstrap admin: `ADMIN_EMAIL`, `ADMIN_USERNAME`, `ADMIN_PASSWORD`
-5. Deploy and copy the backend URL, for example: `https://your-api.onrender.com/api/v1`
+5. Redeploy after adding/changing environment variables (Vercel applies env vars on new deployments).
 
 ### 2) Update Atlas Network Access
 
 1. In MongoDB Atlas, open **Network Access**.
-2. Add Render outbound IP(s), or allow `0.0.0.0/0` temporarily for testing.
-3. Ensure your database user credentials in `MONGO_URI` are correct.
+2. Allow connections from Vercel runtime:
+  - For easiest setup: add `0.0.0.0/0`.
+  - For stricter setups, use fixed egress options and allowlist those addresses.
+3. Verify your Atlas database user credentials in the Mongo URI.
 
-### 3) Deploy Frontend (Vercel)
+### 3) Verify Backend URLs
 
-1. In Vercel, import the same repository.
+After deploy, check:
+
+- Root: `https://user-management-sys-git-d55516-vyshnavkumars2005-9024s-projects.vercel.app/` (API info response)
+- Health: `https://user-management-sys-git-d55516-vyshnavkumars2005-9024s-projects.vercel.app/health`
+- API base: `https://user-management-sys-git-d55516-vyshnavkumars2005-9024s-projects.vercel.app/api/v1`
+
+### 4) Deploy Frontend (Vercel)
+
+1. In Vercel, create/import a project for the frontend.
 2. Configure:
   - Root Directory: `frontend`
   - Build Command: `npm run build`
   - Output Directory: `dist`
 3. Add frontend environment variable:
-  - `VITE_API_URL=<your backend api url>/api/v1`
-4. Deploy and copy the frontend URL.
+  - `VITE_API_URL=https://user-management-sys-git-d55516-vyshnavkumars2005-9024s-projects.vercel.app/api/v1`
+4. Redeploy frontend after setting/changing env vars.
 
-### 4) Final CORS Check
+### 5) Final CORS Check
 
-Set backend `CORS_ORIGIN` to include your frontend domain.
+Set backend `CORS_ORIGIN` with protocol included.
 
-- Single origin example: `https://your-app.vercel.app`
-- Multiple origins example: `https://your-app.vercel.app,http://localhost:5173`
+- Single origin example: `user-management-system-silk-psi.vercel.app`
+- Multiple origins example: `user-management-system-silk-psi.vercel.app,http://localhost:5173`
 
-### 5) Smoke Test
+### 6) Smoke Test
 
 1. Open frontend URL and login.
 2. Verify Dashboard/Profile loads.
 3. Verify Users page works for admin/manager role.
 4. Verify refresh flow by waiting for access token expiry and retrying an API call.
+
+## Troubleshooting (Deployment)
+
+- `Missing required environment variable(s)`:
+  - Add variables in the correct Vercel project and correct environment (Production/Preview).
+  - Redeploy after saving variables.
+- `Could not connect to any servers in your MongoDB Atlas cluster`:
+  - Check Atlas Network Access allowlist.
+  - Confirm URI credentials and database user permissions.
+- `Route not found`:
+  - Use `/api/v1/...` routes for API endpoints.
+  - Ensure frontend `VITE_API_URL` ends with `/api/v1`.
